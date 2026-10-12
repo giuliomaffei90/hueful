@@ -18,10 +18,12 @@ struct HuefulTests {
         #expect(abs(clipped.oklch.l - 0.7) < 0.01)
     }
 
-    @Test func scorePrefersDistinctColors() {
-        let distinct = ["#264653", "#2A9D8F", "#E9C46A", "#F4A261", "#E76F51"].map { RGB(hex: $0)! }
-        let similar = ["#264653", "#274754", "#E9C46A", "#E8C36B", "#E76F51"].map { RGB(hex: $0)! }
-        #expect(Harmony.score(distinct) > Harmony.score(similar))
+    @Test func generatedColorsAreDistinct() {
+        for harmony in Harmony.allCases {
+            let palette = harmony.generate(Array(repeating: nil, count: 6))
+            #expect(palette.count == 6)
+            #expect(Harmony.closestDistance(palette) >= 0.035)
+        }
     }
 
     @Test func contrastAndNames() {

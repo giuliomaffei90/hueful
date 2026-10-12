@@ -4,6 +4,7 @@ struct GeneratorView: View {
     @Environment(PaletteModel.self) private var palette
     #if os(iOS)
     @State private var selected: Slot?
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     #else
     @State private var selected: Slot.ID?
     @State private var showsInspector = false
@@ -60,10 +61,95 @@ struct GeneratorView: View {
         .help("More")
     }
 
-    // MARK: iPhone and iPad: full-width bands, details in a sheet
+    /// Side-by-side columns, like the Coolors website. `insets` keeps their text clear of the bars and the notch.
+    private func columns(insets: EdgeInsets = EdgeInsets(), select: @escaping (Slot) -> Void) -> some View {
+        HStack(spacing: 0) {
+            ForEach(palette.slots) { slot in
+                SlotColumn(slot: slot, isSelected: isSelected(slot),
+                           canRemove: palette.slots.count > PaletteModel.sizes.lowerBound,
+                           insets: EdgeInsets(top: insets.top,
+                                              leading: slot.id == palette.slots.first?.id ? insets.leading : 0,
+                                              bottom: insets.bottom,
+                                              trailing: slot.id == palette.slots.last?.id ? insets.trailing : 0),
+                           toggleLock: { palette.toggleLock(slot) }, remove: { palette.remove(slot) })
+                    .onTapGesture { select(slot) }
+                    .draggable(slot.id.uuidString) {
+                        RoundedRectangle(cornerRadius: 12).fill(slot.rgb.color).frame(width: 80, height: 120)
+                    }
+                    .dropDestination(for: String.self) { ids, _ in
+                        guard let id = ids.first.flatMap(UUID.init(uuidString:)) else { return false }
+                        palette.move(id, to: slot.id)
+                        return true
+                    }
+            }
+        }
+    }
+
+    // MARK: iPhone and iPad: full-width bands (columns when the height is compact), details in a sheet
 
     #if os(iOS)
+    private func isSelected(_ slot: Slot) -> Bool { false }
+
     private var content: some View {
+        Group {
+            if verticalSizeClass == .compact {
+                GeometryReader { geo in
+                    columns(insets: geo.safeAreaInsets) { selected = $0 }
+                        .ignoresSafeArea()
+                }
+            } else {
+                bands
+            }
+        }
+        .ignoresSafeArea(.keyboard)
+        .safeAreaInset(edge: .bottom) {
+            // In landscape the bottom is already taken by the tab bar, so Generate moves to the toolbar.
+            if verticalSizeClass != .compact {
+                Button("Generate", action: palette.generate)
+                    .buttonStyle(.glassProminent)
+                    .controlSize(.large)
+                    .padding(.bottom, 8)
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) { harmonyMenu }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Undo", systemImage: "arrow.uturn.backward", action: palette.undo)
+                    .disabled(!palette.canUndo)
+            }
+            ToolbarSpacer(.fixed, placement: .topBarTrailing)
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                addButton
+                saveButton
+                moreMenu
+            }
+            if verticalSizeClass == .compact {
+                ToolbarSpacer(.fixed, placement: .topBarTrailing)
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Generate", action: palette.generate)
+                        .buttonStyle(.glassProminent)
+                }
+            }
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(item: $selected) { slot in
+            if let rgb = palette.binding(for: slot.id) {
+                NavigationStack {
+                    ColorDetailView(rgb: rgb)
+                        .navigationTitle(Text(verbatim: rgb.wrappedValue.name))
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button(role: .close) { selected = nil }
+                            }
+                        }
+                }
+                .presentationDetents([.medium, .large])
+            }
+        }
+    }
+
+    private var bands: some View {
         GeometryReader { geo in
             let insets = geo.safeAreaInsets
             // Equal bands in the visible area; the first and last also reach under the bars.
@@ -93,66 +179,17 @@ struct GeneratorView: View {
             .scrollDisabled(true)
             .ignoresSafeArea()
         }
-        .ignoresSafeArea(.keyboard)
-        .safeAreaInset(edge: .bottom) {
-            Button("Generate", action: palette.generate)
-                .buttonStyle(.glassProminent)
-                .controlSize(.large)
-                .padding(.bottom, 8)
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) { harmonyMenu }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Undo", systemImage: "arrow.uturn.backward", action: palette.undo)
-                    .disabled(!palette.canUndo)
-            }
-            ToolbarSpacer(.fixed, placement: .topBarTrailing)
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                addButton
-                saveButton
-                moreMenu
-            }
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .sheet(item: $selected) { slot in
-            if let rgb = palette.binding(for: slot.id) {
-                NavigationStack {
-                    ColorDetailView(rgb: rgb)
-                        .navigationTitle(Text(verbatim: rgb.wrappedValue.name))
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .topBarTrailing) {
-                                Button(role: .close) { selected = nil }
-                            }
-                        }
-                }
-                .presentationDetents([.medium, .large])
-            }
-        }
     }
 
     // MARK: Mac: side-by-side columns, details in the inspector
 
     #else
+    private func isSelected(_ slot: Slot) -> Bool { showsInspector && selected == slot.id }
+
     private var content: some View {
-        HStack(spacing: 0) {
-            ForEach(palette.slots) { slot in
-                SlotColumn(slot: slot, isSelected: showsInspector && selected == slot.id,
-                           canRemove: palette.slots.count > PaletteModel.sizes.lowerBound,
-                           toggleLock: { palette.toggleLock(slot) }, remove: { palette.remove(slot) })
-                    .onTapGesture {
-                        selected = slot.id
-                        showsInspector = true
-                    }
-                    .draggable(slot.id.uuidString) {
-                        RoundedRectangle(cornerRadius: 12).fill(slot.rgb.color).frame(width: 80, height: 120)
-                    }
-                    .dropDestination(for: String.self) { ids, _ in
-                        guard let id = ids.first.flatMap(UUID.init(uuidString:)) else { return false }
-                        palette.move(id, to: slot.id)
-                        return true
-                    }
-            }
+        columns {
+            selected = $0.id
+            showsInspector = true
         }
         .focusable()
         .focusEffectDisabled()
@@ -228,20 +265,28 @@ struct SlotRow: View {
         .foregroundStyle(slot.rgb.onColor)
     }
 }
-#else
-/// One color as a full-height column, like the Coolors website. Its controls show on hover.
+#endif
+
+/// One color as a full-height column, like the Coolors website.
+/// On Mac its controls show on hover; on iPhone the lock stays visible and the rest is in the long-press menu.
 struct SlotColumn: View {
     let slot: Slot
     let isSelected: Bool
     let canRemove: Bool
+    var insets = EdgeInsets()
     let toggleLock: () -> Void
     let remove: () -> Void
+    #if os(macOS)
     @State private var hovering = false
+    #else
+    private let hovering = true
+    #endif
 
     var body: some View {
         VStack(spacing: 16) {
             Spacer()
             VStack(spacing: 14) {
+                #if os(macOS)
                 Button("Remove", systemImage: "xmark", action: remove)
                     .opacity(hovering && canRemove ? 1 : 0)
                     .disabled(!canRemove)
@@ -249,8 +294,9 @@ struct SlotColumn: View {
                 Button("Copy HEX", systemImage: "doc.on.doc") { copyToPasteboard(slot.rgb.hex) }
                     .opacity(hovering ? 1 : 0)
                     .help("Copy HEX")
+                #endif
                 Button(slot.locked ? "Unlock" : "Lock", systemImage: slot.locked ? "lock.fill" : "lock.open", action: toggleLock)
-                    .opacity(hovering || slot.locked ? 1 : 0)
+                    .opacity(slot.locked ? 1 : hovering ? 0.7 : 0)
                     .help(slot.locked ? "Unlock" : "Lock")
             }
             .labelStyle(.iconOnly)
@@ -259,23 +305,33 @@ struct SlotColumn: View {
             VStack(spacing: 4) {
                 Text(verbatim: String(slot.rgb.hex.dropFirst()))
                     .font(.system(.title, design: .monospaced, weight: .semibold))
+                    .minimumScaleFactor(0.5)
                 Text(verbatim: slot.rgb.name)
                     .font(.callout)
                     .opacity(0.75)
-                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
             }
+            .lineLimit(1)
             Capsule()
                 .frame(width: 24, height: 4)
                 .opacity(isSelected ? 1 : 0)
         }
         .padding(.horizontal, 8)
         .padding(.bottom, 24)
+        .padding(insets)
         .foregroundStyle(slot.rgb.onColor)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(slot.rgb.color)
         .contentShape(.rect)
+        .contextMenu {
+            Button(slot.locked ? "Unlock" : "Lock", systemImage: slot.locked ? "lock.open" : "lock", action: toggleLock)
+            Button("Copy HEX", systemImage: "doc.on.doc") { copyToPasteboard(slot.rgb.hex) }
+            Button("Remove", systemImage: "trash", role: .destructive, action: remove)
+                .disabled(!canRemove)
+        }
+        #if os(macOS)
         .onHover { hovering = $0 }
         .animation(.easeOut(duration: 0.15), value: hovering)
+        #endif
     }
 }
-#endif

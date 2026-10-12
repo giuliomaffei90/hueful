@@ -17,8 +17,8 @@
 ## Features
 
 - **Generate palettes**: press Generate (Space or ⌘G on Mac) for a new palette of harmonious colors. Lock the colors you like and only the others change.
-- **Harmony rules**: Automatic picks colors freely by taste; Analogous, Monochromatic, Complementary, Split Complementary, Triadic and Square follow the color wheel.
-- **Edit the palette**: from 2 to 10 colors. Add Color adds one that fits the others; remove a color with a swipe on iPhone or the × that appears on hover on Mac; drag colors to reorder them.
+- **Harmony rules**: Automatic makes palettes that look like Coolors' (see How it works); Analogous, Monochromatic, Complementary, Split Complementary, Triadic and Square follow the color wheel.
+- **Edit the palette**: from 2 to 10 colors. Add Color adds one that fits the others; remove a color with a swipe on iPhone or the × that appears on hover on Mac; drag colors to reorder them. In columns (Mac, and iPhone in landscape) a long press or right-click on a color opens Lock, Copy HEX and Remove.
 - **Undo and redo**: generating, adding, removing, moving and loading can be undone, with the Undo button on iPhone and ⌘Z / ⇧⌘Z on Mac.
 - **Color details**: tap or click a color for its name, its HEX, RGB, HSL, HSB and CMYK values with a copy button each, a color picker and a HEX field to change it, and nine tints and shades to pick from. On Mac they open in the inspector.
 - **Colors from a photo**: Colors from Photo… (iPhone, from the photo library) or Colors from Image… (Mac, ⌘O, from a file) replaces the palette with the main colors of the picture.
@@ -29,7 +29,7 @@
   - Good: 4.5:1 (WCAG AA), fine for body text.
   - Headings Only: 3:1 (WCAG AA for large text), for headings and icons.
   - Poor: below 3:1, not for text.
-- **Native on each platform**: tabs on iPhone; a sidebar, inspector and Palette menu on Mac, with one palette per window.
+- **Native on each platform**: tabs on iPhone, with horizontal bands in portrait and side-by-side columns in landscape; a sidebar, inspector and Palette menu on Mac, with one palette per window.
 - **English and Italian**: follows the system language, or the per-app language in Settings.
 
 ## Requirements
@@ -69,12 +69,13 @@ What happens when you press Generate:
 
 1. The Generate button in [GeneratorView.swift](Hueful/GeneratorView.swift), the Space key there, or Palette → Generate in [HuefulApp.swift](Hueful/HuefulApp.swift) calls `generate()` on the window's [PaletteModel](Hueful/PaletteModel.swift).
 2. `generate()` passes the palette to `Harmony.generate` in [Harmony.swift](Hueful/Harmony.swift), with each unlocked color replaced by `nil`.
-3. `Harmony` builds 300 candidate palettes in OKLCH, a color space where equal steps look equal:
-   - hues start from a locked color, if any, then walk around the wheel in small steps with at most one jump for an accent (Automatic), or follow the offsets of the chosen rule;
-   - lightness is spread from dark to light, either as a gradient or shuffled;
-   - one colorfulness "mood" is shared by the whole palette, and about a third of the time one color is a near-neutral;
+3. `Harmony` draws the unlocked colors in OKLCH, a color space where equal steps look equal, from distributions measured on 250 palettes from the Coolors generator:
+   - one to four hue families around a base hue (a colorful locked color, if any); about 4 in 10 palettes stay in one family. With a color-wheel rule the families are the rule's hues;
+   - a lightness range from narrow to wide, with a color at each end and more colors on the light side; each family takes a run of neighbouring lightness levels, so the hue drifts along the gradient;
+   - one colorfulness "mood" for the palette, mostly muted, with each color varying around it, and up to four near-neutrals at the lightest and darkest ends;
+   - usually ordered from light to dark or the reverse, often with one pair swapped, sometimes shuffled;
    - out-of-gamut colors lose just enough chroma to fit in sRGB (`RGB(l:c:h:)` in [RGB.swift](Hueful/RGB.swift)).
-4. Each candidate is scored: colors far apart from each other, a wide lightness range and even colorfulness score higher. One of the ten best is picked at random, so every press gives something different.
+4. A palette with two nearly identical colors (OKLab distance under 0.035) is thrown away and drawn again.
 5. The model registers the change with the window's undo manager and replaces the colors; the view animates to the new palette. Each color's name is the closest of the CSS named colors, measured in CIE Lab ([ColorNames.swift](Hueful/ColorNames.swift)).
 
 The other features use the same model:
@@ -85,7 +86,7 @@ The other features use the same model:
 
 ## Known limitations
 
-- The generator is an original approximation of Coolors' results, not its algorithm, which is not public.
+- The generator imitates the look of Coolors' palettes, not their source: Coolors' generator mostly serves palettes from a collection of a couple of thousand ready-made ones (repeats show up after a few hundred presses), while Hueful draws every palette from scratch.
 - Color names come from the 140 CSS named colors, so they are approximate: a dark green may be called "Dark Olive Green".
 - Saved palettes stay on the device that saved them. There is no iCloud sync between iPhone, iPad and Mac.
 - Changes made in the color details (color picker, HEX field, tints and shades) and locking a color can't be undone.

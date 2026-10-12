@@ -31,72 +31,84 @@ nonisolated enum Harmony: String, CaseIterable, Identifiable, Sendable {
     }
 
     /// A palette the size of `current`, keeping its non-nil (locked) colors.
-    /// Makes many random candidates and returns one of the best-looking, so taste comes from a score, not a fixed rule.
+    /// Colors are drawn from distributions measured on 250 Coolors palettes; near-identical colors are rejected.
     func generate(_ current: [RGB?]) -> [RGB] {
-        let scored = (0..<300).map { _ in
-            let palette = candidate(current)
-            return (palette, Harmony.score(palette))
+        var palette = candidate(current)
+        for _ in 0..<100 where Harmony.closestDistance(palette) < 0.035 {
+            palette = candidate(current)
         }
-        return scored.sorted { $0.1 > $1.1 }.prefix(10).randomElement()!.0
+        return palette
     }
 
     /// One random palette in OKLCH, where equal steps look equal.
     private func candidate(_ current: [RGB?]) -> [RGB] {
-        let n = current.count
+        let free = current.indices.filter { current[$0] == nil }
+        guard !free.isEmpty else { return current.compactMap { $0 } }
+        let n = free.count
         let colorful = current.compactMap { $0?.oklch }.filter { $0.c > 0.04 }
 
-        // Hues: a colorful locked color, if any, is the starting point.
-        var hue = colorful.randomElement()?.h ?? .random(in: 0..<360)
-        var hues: [Double] = []
-        var jumped = false
-        for i in 0..<n {
-            if self == .automatic {
-                // A random walk around the wheel: mostly neighbours, at most one jump for an accent.
-                hues.append(hue)
-                let jump = !jumped && Double.random(in: 0...1) < 0.25
-                jumped = jumped || jump
-                hue += jump ? .random(in: 120...200) : .random(in: -35...35)
-            } else {
-                hues.append(hue + hueOffsets[i * hueOffsets.count / n] + .random(in: -8...8))
-            }
+        // Hues: a few families around a base hue (a colorful locked color, if any).
+        // About 4 in 10 Coolors palettes stay within one family.
+        let base = colorful.randomElement()?.h ?? .random(in: 0..<360)
+        let families: [Double] = (self == .automatic
+            ? [0] + (0..<Harmony.pick([30, 38, 24, 8])).map { _ in (Bool.random() ? 1 : -1) * .random(in: 40...180) }
+            : hueOffsets).sorted().map { base + $0 }
+        // Each family takes a run of neighbouring lightness levels, so the hue drifts along the gradient
+        // instead of jumping back and forth. Every family gets at least one color when there is room.
+        var familyOf = (Array(families.indices) + (0..<max(n - families.count, 0)).map { _ in families.indices.randomElement()! })
+            .prefix(n).sorted()
+        if Bool.random() { familyOf.reverse() }
+
+        // Lightness: a random range, from narrow to wide, with colors at both ends and more of them on the light side.
+        let low = Double.random(in: 0.15...0.55), high = min(low + .random(in: 0.3...0.75), 0.99)
+        let levels = ([low, high] + (0..<max(n - 2, 0)).map { _ in low + (high - low) * pow(.random(in: 0...1), 0.7) })
+            .prefix(n).sorted()
+
+        // Chroma: mostly muted, one mood for the palette (or the locked colors' mood) and uneven around it.
+        let mood = colorful.randomElement()?.c ?? 0.035 + 0.15 * pow(.random(in: 0...1), 1.3)
+        var chromas = levels.map { _ in mood * .random(in: 0.4...1.6) }
+        // Up to four near-neutrals, at the lightest and darkest ends, like the greys and creams of real palettes.
+        let neutrals = min(Harmony.pick([50, 30, 14, 5, 1]), n)
+        for i in levels.indices.sorted(by: { abs(levels[$0] - 0.6) > abs(levels[$1] - 0.6) }).prefix(neutrals) {
+            chromas[i] = .random(in: 0...0.025)
         }
 
-        // Lightness: spread from dark to light, as a gradient or mixed.
-        let low = Double.random(in: 0.25...0.5), high = min(low + .random(in: 0.3...0.6), 0.94)
-        var levels = (0..<n).map { low + (high - low) * Double($0) / Double(max(n - 1, 1)) + .random(in: -0.03...0.03) }
-        if Bool.random() { levels.shuffle() } else if Bool.random() { levels.reverse() }
-
-        // Chroma: one mood for the whole palette, from muted to vivid, or the locked colors' mood.
-        let lockedMood = colorful.randomElement().flatMap { Bool.random() ? $0.c : nil }
-        let mood = lockedMood ?? 0.04 + 0.16 * pow(.random(in: 0...1), 0.8)
-        var chromas = (0..<n).map { _ in mood * .random(in: 0.65...1.35) }
-        // Often a near-neutral at the lightest or darkest spot, to rest the eye.
-        if Double.random(in: 0...1) < 0.35,
-           let i = (0..<n).filter({ current[$0] == nil }).max(by: { abs(levels[$0] - 0.6) < abs(levels[$1] - 0.6) }) {
-            chromas[i] = .random(in: 0.005...0.03)
+        var colors = levels.indices.map { i in
+            RGB(l: levels[i], c: chromas[i], h: families[familyOf[i]] + .random(in: -15...15))
+        }
+        // Order: usually from light to dark or the reverse, often with one pair swapped, sometimes mixed.
+        if Bool.random() { colors.reverse() }
+        switch Double.random(in: 0...1) {
+        case ..<0.3: colors.shuffle()
+        case ..<0.6 where n > 1: colors.swapAt(Int.random(in: 0..<n - 1), Int.random(in: 0..<n - 1) + 1)
+        default: break
         }
 
-        return (0..<n).map { current[$0] ?? RGB(l: levels[$0], c: chromas[$0], h: hues[$0]) }
+        var palette = current
+        for (slot, color) in zip(free, colors) { palette[slot] = color }
+        return palette.compactMap { $0 }
     }
 
-    /// Higher is better: colors clearly apart, a real light-to-dark range, and even colorfulness.
-    static func score(_ palette: [RGB]) -> Double {
-        let labs = palette.map(\.oklab), lch = palette.map(\.oklch)
-        var closest = 1.0
+    /// An index drawn with the given relative weights.
+    private static func pick(_ weights: [Int]) -> Int {
+        var r = Int.random(in: 0..<weights.reduce(0, +))
+        for (i, weight) in weights.enumerated() {
+            if r < weight { return i }
+            r -= weight
+        }
+        return 0
+    }
+
+    /// The OKLab distance between the two most similar colors of a palette.
+    static func closestDistance(_ palette: [RGB]) -> Double {
+        let labs = palette.map(\.oklab)
+        var closest = Double.infinity
         for i in labs.indices {
             for j in labs.indices where j > i {
-                let d = (pow(labs[i].l - labs[j].l, 2) + pow(labs[i].a - labs[j].a, 2) + pow(labs[i].b - labs[j].b, 2)).squareRoot()
-                closest = min(closest, d)
+                closest = min(closest, (pow(labs[i].l - labs[j].l, 2) + pow(labs[i].a - labs[j].a, 2)
+                                        + pow(labs[i].b - labs[j].b, 2)).squareRoot())
             }
         }
-        let lightness = lch.map(\.l)
-        let spread = lightness.max()! - lightness.min()!
-        let chromas = lch.map(\.c).filter { $0 > 0.04 }
-        var unevenness = 0.0
-        if chromas.count > 1 {
-            let mean = chromas.reduce(0, +) / Double(chromas.count)
-            unevenness = (chromas.map { pow($0 - mean, 2) }.reduce(0, +) / Double(chromas.count)).squareRoot() / mean
-        }
-        return min(closest, 0.15) * 8 + min(spread, 0.45) * 2 - unevenness * 0.4 - (closest < 0.05 ? 5 : 0)
+        return closest
     }
 }
