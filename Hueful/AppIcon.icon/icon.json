@@ -1,0 +1,134 @@
+{
+  "features" : [
+    "refractivity"
+  ],
+  "fill-specializations" : [
+    {
+      "value" : {
+        "automatic-gradient" : "display-p3:0.20000,0.17000,0.45000,1.00000"
+      }
+    },
+    {
+      "appearance" : "dark",
+      "value" : {
+        "automatic-gradient" : "display-p3:0.10944,0.09272,0.25015,1.00000"
+      }
+    }
+  ],
+  "groups" : [
+    {
+      "blur-material" : null,
+      "layers" : [
+        {
+          "fill" : {
+            "solid" : "display-p3:0.20000,0.72000,0.85000,1.00000"
+          },
+          "glass" : true,
+          "image-name" : "Right.svg",
+          "name" : "Right",
+          "opacity" : 0.9,
+          "position" : {
+            "scale" : 0.88,
+            "translation-in-points" : [
+              0,
+              -20
+            ]
+          }
+        }
+      ],
+      "lighting" : "individual",
+      "name" : "Swatches",
+      "refractivity" : {
+        "depth" : 0,
+        "enabled" : true,
+        "strength" : 0.3345703125
+      },
+      "shadow" : {
+        "kind" : "layer-color",
+        "opacity" : 0.5
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.25
+      }
+    },
+    {
+      "blur-material" : null,
+      "layers" : [
+        {
+          "fill" : {
+            "solid" : "display-p3:1.00000,0.80000,0.25000,1.00000"
+          },
+          "glass" : true,
+          "image-name" : "Middle.svg",
+          "name" : "Middle",
+          "opacity" : 0.9,
+          "position" : {
+            "scale" : 0.88,
+            "translation-in-points" : [
+              0,
+              -20
+            ]
+          }
+        }
+      ],
+      "lighting" : "individual",
+      "name" : "Swatches",
+      "refractivity" : {
+        "depth" : 0,
+        "enabled" : true,
+        "strength" : 0.3345703125
+      },
+      "shadow" : {
+        "kind" : "layer-color",
+        "opacity" : 0.5
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.25
+      }
+    },
+    {
+      "blur-material" : null,
+      "layers" : [
+        {
+          "fill" : {
+            "solid" : "display-p3:1.00000,0.38000,0.42000,1.00000"
+          },
+          "glass" : true,
+          "image-name" : "Left.svg",
+          "name" : "Left",
+          "opacity" : 0.9,
+          "position" : {
+            "scale" : 0.88,
+            "translation-in-points" : [
+              0,
+              -20
+            ]
+          }
+        }
+      ],
+      "lighting" : "individual",
+      "name" : "Swatches",
+      "refractivity" : {
+        "depth" : 0,
+        "enabled" : true,
+        "strength" : 0.3345703125
+      },
+      "shadow" : {
+        "kind" : "layer-color",
+        "opacity" : 0.5
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.25
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : "shared"
+  }
+}

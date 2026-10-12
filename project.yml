@@ -1,0 +1,41 @@
+name: Hueful
+options:
+  developmentLanguage: en
+  deploymentTarget:
+    iOS: "26.0"
+    macOS: "26.0"
+settings:
+  SWIFT_VERSION: "6.0"
+  DEVELOPMENT_TEAM: 7662X2KKF5
+targets:
+  Hueful:
+    type: application
+    supportedDestinations: [iOS, macOS]
+    sources: [Hueful]
+    scheme:
+      testTargets: [HuefulTests]
+    settings:
+      # Kept from the first release so the installed app and its saved palettes carry over.
+      PRODUCT_BUNDLE_IDENTIFIER: com.giuliomaffei.ColorPalette
+      PRODUCT_NAME: Hueful
+      GENERATE_INFOPLIST_FILE: YES
+      INFOPLIST_KEY_CFBundleDisplayName: Hueful
+      INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.graphics-design
+      INFOPLIST_KEY_UILaunchScreen_Generation: YES
+      INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+      TARGETED_DEVICE_FAMILY: "1,2"
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      ENABLE_APP_SANDBOX: YES
+      ENABLE_USER_SELECTED_FILES: readonly
+      SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+      SWIFT_APPROACHABLE_CONCURRENCY: YES
+      SWIFT_EMIT_LOC_STRINGS: YES
+  HuefulTests:
+    type: bundle.unit-test
+    supportedDestinations: [iOS, macOS]
+    sources: [HuefulTests]
+    dependencies:
+      - target: Hueful
+    settings:
+      GENERATE_INFOPLIST_FILE: YES
+      "TEST_HOST[sdk=macosx*]": "$(BUILT_PRODUCTS_DIR)/Hueful.app/Contents/MacOS/Hueful"
