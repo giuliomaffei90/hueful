@@ -20,7 +20,7 @@
 - **Harmony rules**: Automatic makes palettes that look like Coolors' (see How it works); Analogous, Monochromatic, Complementary, Split Complementary, Triadic and Square follow the color wheel.
 - **Edit the palette**: from 2 to 10 colors. Add Color adds one that fits the others; remove a color with a swipe on iPhone or the × that appears on hover on Mac; drag colors to reorder them. In columns (Mac, and iPhone in landscape) a long press or right-click on a color opens Lock, Copy HEX and Remove.
 - **Undo and redo**: generating, adding, removing, moving and loading can be undone, with the Undo button on iPhone and ⌘Z / ⇧⌘Z on Mac.
-- **Color details**: tap or click a color for its name, its HEX, RGB, HSL, HSB and CMYK values with a copy button each, a color picker and a HEX field to change it, and nine tints and shades to pick from. On Mac they open in the inspector.
+- **Color details**: tap or click a color for its name, its HEX, RGB, HSL, HSB and CMYK values with a copy button each, a color picker and a HEX field to change it, nine tints and shades to pick from, and the nearest RAL, HKS and Prismacolor colors. On Mac they open in the inspector.
 - **Colors from a photo**: Colors from Photo… (iPhone, from the photo library) or Colors from Image… (Mac, ⌘O, from a file) replaces the palette with the main colors of the picture.
 - **Library**: Save Palette… (⌘S on Mac) keeps a palette with a name. Open, rename, share or delete saved palettes in Library.
 - **Share**: Share Image (a PNG of the palette), Share HEX Codes, or Share Coolors Link to open the same palette on coolors.co. Copy HEX Codes (⇧⌘C on Mac) puts them on the clipboard.
@@ -81,6 +81,7 @@ What happens when you press Generate:
 The other features use the same model:
 
 - Colors from a photo: the image is read with ImageIO, shrunk to 48×48 pixels, and its pixels are grouped with k-means into as many colors as the palette has, most common first (`RGB.dominant` in [RGB.swift](Hueful/RGB.swift)).
+- Nearest matches: the color is compared in OKLab with 183 RAL Classic, 88 HKS K and 150 Prismacolor Premier colors ([ColorSystem.swift](Hueful/ColorSystem.swift), data in [ColorSystemData.swift](Hueful/ColorSystemData.swift)).
 - Contrast: the WCAG 2 relative luminance of each color gives the ratio of each pair ([ContrastView.swift](Hueful/ContrastView.swift)).
 - Library: saved palettes are a SwiftData model holding the name, the HEX codes and the date ([PaletteModel.swift](Hueful/PaletteModel.swift), [LibraryView.swift](Hueful/LibraryView.swift)).
 
@@ -91,7 +92,10 @@ The other features use the same model:
 - Saved palettes stay on the device that saved them. There is no iCloud sync between iPhone, iPad and Mac.
 - Changes made in the color details (color picker, HEX field, tints and shades) and locking a color can't be undone.
 - On iPhone, Colors from Photo… picks from the photo library; it can't take a new picture with the camera.
+- Nearest matches are screen approximations from community lists, not the manufacturers' data. Pantone is left out because its color data is licensed by Pantone, and Copic because no list of its marker colors with a clear license is available.
 
 ## Legal note
 
 Hueful is an independent project, not affiliated with or endorsed by Coolors. Share Coolors Link only builds a link to the public coolors.co palette page; Coolors is a trademark of its owners.
+
+RAL, HKS and Prismacolor are trademarks of their owners, and Hueful is not affiliated with them. The sources of the nearest-match colors and their licenses are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md): the RAL and HKS values are MIT-licensed, while the Prismacolor list states no license, so check their use before publishing the app.

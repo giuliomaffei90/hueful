@@ -412,6 +412,16 @@
         }
       }
     },
+    "Nearest Matches": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Corrispondenze più vicine"
+          }
+        }
+      }
+    },
     "No": {
       "localizations": {
         "it": {
@@ -728,6 +738,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Inverti colori"
+          }
+        }
+      }
+    },
+    "The closest color in each collection. Screen colors only approximate real paints, inks and pencils.": {
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il colore più vicino in ogni collezione. I colori sullo schermo approssimano soltanto vernici, inchiostri e matite reali."
           }
         }
       }

@@ -149,17 +149,15 @@ struct GeneratorView: View {
         }
     }
 
+    /// Equal bands in the visible area. The areas under the bars show the first and last colors as a
+    /// background, so every band keeps its size when it moves.
     private var bands: some View {
         GeometryReader { geo in
-            let insets = geo.safeAreaInsets
-            // Equal bands in the visible area; the first and last also reach under the bars.
             let rowHeight = geo.size.height / CGFloat(palette.slots.count)
             List {
                 ForEach(palette.slots) { slot in
                     SlotRow(slot: slot) { palette.toggleLock(slot) }
                         .frame(height: rowHeight)
-                        .padding(.top, slot.id == palette.slots.first?.id ? insets.top : 0)
-                        .padding(.bottom, slot.id == palette.slots.last?.id ? insets.bottom : 0)
                         .contentShape(.rect)
                         .onTapGesture { selected = slot }
                         .accessibilityAction(named: "Show Details") { selected = slot }
@@ -177,6 +175,13 @@ struct GeneratorView: View {
             .listStyle(.plain)
             .environment(\.defaultMinListRowHeight, 0)
             .scrollDisabled(true)
+            .scrollContentBackground(.hidden)
+        }
+        .background {
+            VStack(spacing: 0) {
+                (palette.slots.first?.rgb.color ?? .clear)
+                (palette.slots.last?.rgb.color ?? .clear)
+            }
             .ignoresSafeArea()
         }
     }
@@ -246,7 +251,7 @@ struct SlotRow: View {
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: String(slot.rgb.hex.dropFirst()))
+                Text(verbatim: slot.rgb.hex)
                     .font(.title.weight(.semibold).monospaced())
                 Text(verbatim: slot.rgb.name)
                     .font(.subheadline)
@@ -303,7 +308,7 @@ struct SlotColumn: View {
             .buttonStyle(.plain)
             .font(.title2)
             VStack(spacing: 4) {
-                Text(verbatim: String(slot.rgb.hex.dropFirst()))
+                Text(verbatim: slot.rgb.hex)
                     .font(.system(.title, design: .monospaced, weight: .semibold))
                     .minimumScaleFactor(0.5)
                 Text(verbatim: slot.rgb.name)

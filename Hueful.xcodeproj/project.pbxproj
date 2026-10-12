@@ -9,7 +9,9 @@
 /* Begin PBXBuildFile section */
 		091A84B2916474D802AF734D /* PaletteModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2058FC1910848DC6D77A64C0 /* PaletteModel.swift */; };
 		14E855290751F4617723B509 /* HuefulApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25D02DE463E12C1220075827 /* HuefulApp.swift */; };
+		180A2421C6F926F6DA9D6675 /* ColorSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11286EEF5B4ED0D99A8237A9 /* ColorSystem.swift */; };
 		1AFEC5C5E5A044B9CB19B7F5 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 05B68DE1EB450EAC7389C34C /* Localizable.xcstrings */; };
+		22C52067EC19A5435DBEA4BA /* ColorSystemData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4785198AB711A005377E2C8F /* ColorSystemData.swift */; };
 		3A4457F29396978B9FD218A1 /* GeneratorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82285849997C3B2E35A0182E /* GeneratorView.swift */; };
 		4A6E4021CA3B06BEEC7A890E /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = CB7C5A12B9F101EC5FDF6728 /* AppIcon.icon */; };
 		52CDD9501750CAF5860C0D2E /* ColorNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C3CB3510B954C980D70376 /* ColorNames.swift */; };
@@ -33,9 +35,11 @@
 
 /* Begin PBXFileReference section */
 		05B68DE1EB450EAC7389C34C /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		11286EEF5B4ED0D99A8237A9 /* ColorSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorSystem.swift; sourceTree = "<group>"; };
 		2058FC1910848DC6D77A64C0 /* PaletteModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaletteModel.swift; sourceTree = "<group>"; };
 		229952F8C1E0D4A953E352BF /* HuefulTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = HuefulTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		25D02DE463E12C1220075827 /* HuefulApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HuefulApp.swift; sourceTree = "<group>"; };
+		4785198AB711A005377E2C8F /* ColorSystemData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorSystemData.swift; sourceTree = "<group>"; };
 		5FA8FDF643F8FF99A2EA3F2C /* HuefulTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HuefulTests.swift; sourceTree = "<group>"; };
 		6337A12F4B148AC7D86FEE45 /* ContrastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContrastView.swift; sourceTree = "<group>"; };
 		6DCAD1322789B0408C933869 /* Harmony.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Harmony.swift; sourceTree = "<group>"; };
@@ -81,6 +85,8 @@
 				CB7C5A12B9F101EC5FDF6728 /* AppIcon.icon */,
 				C71198E6A59B80F02F9AD331 /* ColorDetailView.swift */,
 				F4C3CB3510B954C980D70376 /* ColorNames.swift */,
+				11286EEF5B4ED0D99A8237A9 /* ColorSystem.swift */,
+				4785198AB711A005377E2C8F /* ColorSystemData.swift */,
 				6337A12F4B148AC7D86FEE45 /* ContrastView.swift */,
 				82285849997C3B2E35A0182E /* GeneratorView.swift */,
 				6DCAD1322789B0408C933869 /* Harmony.swift */,
@@ -197,6 +203,8 @@
 			files = (
 				CD49F66A5C96A7B62D2130D4 /* ColorDetailView.swift in Sources */,
 				52CDD9501750CAF5860C0D2E /* ColorNames.swift in Sources */,
+				180A2421C6F926F6DA9D6675 /* ColorSystem.swift in Sources */,
+				22C52067EC19A5435DBEA4BA /* ColorSystemData.swift in Sources */,
 				8D81534587ACD379BDB71F8B /* ContrastView.swift in Sources */,
 				3A4457F29396978B9FD218A1 /* GeneratorView.swift in Sources */,
 				F905786A4008AD12F215A736 /* Harmony.swift in Sources */,

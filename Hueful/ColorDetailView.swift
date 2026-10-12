@@ -42,6 +42,36 @@ struct ColorDetailView: View {
                 }
             }
 
+            Section {
+                ForEach(ColorSystem.all, id: \.title) { system in
+                    let match = system.nearest(to: rgb)
+                    LabeledContent(system.title) {
+                        HStack {
+                            Circle()
+                                .fill(match.rgb.color)
+                                .stroke(.separator)
+                                .frame(width: 18, height: 18)
+                                .help(Text(verbatim: match.rgb.hex))
+                            Text(verbatim: match.code)
+                                .multilineTextAlignment(.trailing)
+                                .textSelection(.enabled)
+                            Button(copied == match.code ? "Copied" : "Copy",
+                                   systemImage: copied == match.code ? "checkmark" : "doc.on.doc") {
+                                copyToPasteboard(match.code)
+                                copied = match.code
+                            }
+                            .labelStyle(.iconOnly)
+                            .buttonStyle(.borderless)
+                            .help("Copy")
+                        }
+                    }
+                }
+            } header: {
+                Text("Nearest Matches")
+            } footer: {
+                Text("The closest color in each collection. Screen colors only approximate real paints, inks and pencils.")
+            }
+
             Section("Edit") {
                 ColorPicker("Color", selection: Binding { rgb.color } set: { rgb = RGB($0) }, supportsOpacity: false)
                 LabeledContent("HEX") {

@@ -40,6 +40,12 @@ struct HuefulTests {
         }
     }
 
+    @Test func colorSystemsFindExactMatches() {
+        #expect(ColorSystem.all.map(\.swatches.count) == [183, 88, 150])
+        #expect(ColorSystem.ral.nearest(to: RGB(hex: "#CCC188")!).code == "RAL 1000")
+        #expect(ColorSystem.prismacolor.nearest(to: RGB(hex: "#002F50")!).code == "PC 901 Indigo Blue")
+    }
+
     @Test func kMeansFindsMainColors() {
         let points = Array(repeating: RGB.black, count: 30) + Array(repeating: RGB.white, count: 10)
         #expect(RGB.kMeans(points, k: 2) == [.black, .white])
